@@ -24,20 +24,24 @@ public class LinkCollector {
         this.outputDirName = outputDirName;
     }
 
+    private String relativeToAbsolute(String s) {
+        StringBuilder b = new StringBuilder();
+        b.append(this.base.getScheme());
+        b.append("://");
+        b.append(this.base.getHost());
+        if (this.base.getPort() != -1) {
+            b.append(this.base.getPort());
+        }
+        if (!s.startsWith("/")) {
+            b.append("/");
+        }
+        b.append(s);
+        return b.toString();
+    }
+
     private URI parseURI(String s) throws LinkCollectorException {
         if (!s.contains("://")) {
-            StringBuilder b = new StringBuilder();
-            b.append(this.base.getScheme());
-            b.append("://");
-            b.append(this.base.getHost());
-            if (this.base.getPort() != -1) {
-                b.append(this.base.getPort());
-            }
-            if (!s.startsWith("/")) {
-                b.append("/");
-            }
-            b.append(s);
-            s = b.toString();
+            s = relativeToAbsolute(s);
         }
 
         URI uri;
@@ -71,6 +75,7 @@ public class LinkCollector {
             if (attrs.hasKey(attrName)) {
                 URI uri = parseURI(attrs.get(attrName));
 
+                // OS-specific filesystem path.
                 String localPath = Paths.get(
                         outputDirName,
                         uri.getHost(),
@@ -82,6 +87,7 @@ public class LinkCollector {
                     path = path.substring(1);
                 }
 
+                // Unix-like URI path.
                 String linkPath = new StringJoiner("/").
                         add(".").
                         add(outputDirName).

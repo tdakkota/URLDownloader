@@ -1,6 +1,8 @@
 package ru.ncedu.tdakkota.urldownloader.app;
 
 import org.apache.commons.io.FileUtils;
+import ru.ncedu.tdakkota.urldownloader.app.config.Config;
+import ru.ncedu.tdakkota.urldownloader.app.config.ConfigException;
 import ru.ncedu.tdakkota.urldownloader.html.LinkCollector;
 import ru.ncedu.tdakkota.urldownloader.html.LinkCollectorException;
 import ru.ncedu.tdakkota.urldownloader.html.RewrittenDocument;

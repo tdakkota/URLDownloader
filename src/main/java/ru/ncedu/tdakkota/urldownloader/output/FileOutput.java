@@ -57,10 +57,6 @@ public class FileOutput implements Output, Closeable {
         return file;
     }
 
-    public String fileName() {
-        return this.file.getPath();
-    }
-
     @Override
     public void close() throws IOException {
         this.output.close();
