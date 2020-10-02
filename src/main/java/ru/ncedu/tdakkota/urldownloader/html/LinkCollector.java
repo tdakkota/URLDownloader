@@ -24,11 +24,52 @@ public class LinkCollector {
         this.outputDirName = outputDirName;
     }
 
-    private void rewriteByQuery(RewrittenDocument doc, String query, String attrName) throws URISyntaxException {
+    private URI parseURI(String s) throws LinkCollectorException {
+        if (!s.contains("://")) {
+            StringBuilder b = new StringBuilder();
+            b.append(this.base.getScheme());
+            b.append("://");
+            b.append(this.base.getHost());
+            if (this.base.getPort() != -1) {
+                b.append(this.base.getPort());
+            }
+            if (!s.startsWith("/")) {
+                b.append("/");
+            }
+            b.append(s);
+            s = b.toString();
+        }
+
+        URI uri;
+        try {
+            uri = new URI(s);
+        } catch (URISyntaxException ex) {
+            throw new LinkCollectorException("Failed to parse link: " + ex.getMessage());
+        }
+
+        String host = uri.getHost();
+        if (host == null || host.isEmpty()) {
+            host = this.base.getHost();
+        }
+
+        String scheme = uri.getScheme();
+        if (scheme == null || scheme.isEmpty()) {
+            scheme = this.base.getScheme();
+        }
+
+        try {
+            return new URI(scheme, uri.getUserInfo(), host, uri.getPort(), uri.getPath(), uri.getQuery(), uri.getFragment());
+        } catch (URISyntaxException ex) {
+            throw new LinkCollectorException("Failed to parse link: " + ex.getMessage());
+        }
+    }
+
+
+    private void rewriteByQuery(RewrittenDocument doc, String query, String attrName) throws LinkCollectorException {
         for (Element e : doc.getDoc().select(query)) {
             Attributes attrs = e.attributes();
             if (attrs.hasKey(attrName)) {
-                URI uri = new URI(attrs.get(attrName));
+                URI uri = parseURI(attrs.get(attrName));
 
                 String localPath = Paths.get(
                         outputDirName,
@@ -54,8 +95,13 @@ public class LinkCollector {
         }
     }
 
-    public RewrittenDocument rewrite(Charset charset) throws URISyntaxException, IOException {
-        Document doc = Jsoup.parse(this.input, charset.name(), this.base.toString());
+    public RewrittenDocument rewrite(Charset charset) throws LinkCollectorException {
+        Document doc;
+        try {
+            doc = Jsoup.parse(this.input, charset.name(), this.base.toString());
+        } catch (IOException e) {
+            throw new LinkCollectorException("Failed to parse document: " + e.getMessage());
+        }
         RewrittenDocument newDoc = new RewrittenDocument(doc);
         rewriteByQuery(newDoc, "link", "href");
         rewriteByQuery(newDoc, "img", "src");

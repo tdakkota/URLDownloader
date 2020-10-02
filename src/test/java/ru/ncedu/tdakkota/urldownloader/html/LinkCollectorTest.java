@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class LinkCollectorTest {
 
     @Test
-    void collect() throws URISyntaxException, IOException {
+    void collect() throws URISyntaxException, IOException, LinkCollectorException {
         URI uri = new URI("http://example.org/base");
         InputStream inputStream = getClass().getClassLoader().getResource("link/test.html").openStream();
         LinkCollector collector = new LinkCollector(inputStream, uri, "example_folder");

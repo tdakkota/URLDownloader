@@ -2,6 +2,7 @@ package ru.ncedu.tdakkota.urldownloader.app;
 
 import org.apache.commons.io.FileUtils;
 import ru.ncedu.tdakkota.urldownloader.html.LinkCollector;
+import ru.ncedu.tdakkota.urldownloader.html.LinkCollectorException;
 import ru.ncedu.tdakkota.urldownloader.html.RewrittenDocument;
 import ru.ncedu.tdakkota.urldownloader.net.Downloader;
 import ru.ncedu.tdakkota.urldownloader.net.DownloaderException;
@@ -15,20 +16,18 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.file.Path;
 import java.util.Map;
 
 public class URLDownloaderApp {
-    private static void run(Config config) throws IOException, DownloaderException, FileOutputDialogException, URISyntaxException {
+    private static void run(Config config) throws Exception {
         Downloader d = SchemaDispatcher.getDefault();
         FileOutput output = new FileOutput(config.getOutputFile());
         d.download(config.getURL().toURI(), output);
         output.close();
 
         if (output.getContentType().toLowerCase().contains("text/html")) {
-            File file = new File(config.getOutputFile());
-            Path dir = config.getOutputDirectory();
-            String dirName = dir.getName(dir.getNameCount() - 1).toString();
+            File file = output.getFile();
+            String dirName = config.getURL().getHost() + "_files";
 
             RewrittenDocument doc = new LinkCollector(
                     new FileInputStream(file),
@@ -54,8 +53,12 @@ public class URLDownloaderApp {
             System.err.println("Flags parsing failed. Reason: " + exp.getMessage());
         } catch (MalformedURLException | URISyntaxException exp) {
             System.err.println("URL is invalid: " + exp.getMessage());
+        } catch (LinkCollectorException exp) {
+            System.err.println("Link collection failed: " + exp.getMessage());
         } catch (DownloaderException | FileOutputDialogException | IOException exp) {
             System.err.println("Download failed: " + exp.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }

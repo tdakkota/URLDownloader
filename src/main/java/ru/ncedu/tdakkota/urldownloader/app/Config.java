@@ -24,7 +24,8 @@ class Config {
         String outputPath = this.url.getFile();
         if (!outputPath.isEmpty()) {
             outputPath = outputPath.substring(1);
-        } else {
+        }
+        if (outputPath.isEmpty()) {
             outputPath = "index.html";
         }
         if (args.length > 1) {

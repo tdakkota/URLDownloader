@@ -2,8 +2,11 @@ package ru.ncedu.tdakkota.urldownloader.output;
 
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 public class FileOutput implements Output, Closeable {
+    private File file;
     private FileOutputStream output;
     private Charset charset = Charset.defaultCharset();
     private String contentType;
@@ -13,9 +16,14 @@ public class FileOutput implements Output, Closeable {
     }
 
     public FileOutput(String path, FileOutputDialog dialog) throws IOException, FileOutputDialogException {
-        File file = new File(path);
-        if (!file.createNewFile()) {
-            dialog.ask(path);
+        if (Files.exists(Paths.get(path))) {
+            path = dialog.ask(path);
+            this.file = new File(path);
+        } else {
+            this.file = new File(path);
+            File parent = this.file.getParentFile();
+            if (parent != null)
+                parent.mkdirs();
         }
 
         this.output = new FileOutputStream(file);
@@ -43,6 +51,14 @@ public class FileOutput implements Output, Closeable {
     @Override
     public String getContentType() {
         return this.contentType;
+    }
+
+    public File getFile() {
+        return file;
+    }
+
+    public String fileName() {
+        return this.file.getPath();
     }
 
     @Override
