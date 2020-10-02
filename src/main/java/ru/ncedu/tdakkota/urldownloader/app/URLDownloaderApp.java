@@ -11,6 +11,7 @@ import ru.ncedu.tdakkota.urldownloader.net.DownloaderException;
 import ru.ncedu.tdakkota.urldownloader.net.SchemaDispatcher;
 import ru.ncedu.tdakkota.urldownloader.output.FileOutput;
 import ru.ncedu.tdakkota.urldownloader.output.FileOutputDialogException;
+import ru.ncedu.tdakkota.urldownloader.runner.DesktopRunner;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -42,6 +43,9 @@ public class URLDownloaderApp {
                 d.download(uri, new FileOutput(links.get(uri)));
             }
         }
+
+        if (config.isRunAfter())
+            new DesktopRunner().run(output.getFile().getPath());
     }
 
     public static void main(String[] args) {
@@ -49,8 +53,10 @@ public class URLDownloaderApp {
         try {
             // parse the command line arguments
             config.parse();
-            // run app
-            run(config);
+            if (!config.isHelp()) {
+                // run app
+                run(config);
+            }
         } catch (ConfigException exp) {
             System.err.println("Flags parsing failed. Reason: " + exp.getMessage());
         } catch (MalformedURLException | URISyntaxException exp) {

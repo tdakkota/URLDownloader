@@ -11,9 +11,8 @@ import java.util.Map;
 public class Config {
     private URL url;
     private Path output;
-
+    private boolean help = false;
     private boolean runAfter = false;
-
     private String[] args;
 
     public Config(String[] args) {
@@ -21,6 +20,16 @@ public class Config {
     }
 
     private void fromMap(Map<String, String> args) throws ConfigException, MalformedURLException {
+        if (args.containsKey("help") || args.containsKey("h")) {
+            System.out.println("app.jar <-r|-h|--help> <URL> [FILE]\n");
+            System.out.println("Options:");
+            System.out.println("\tr -- show open dialog after download");
+            System.out.println("\t-h or --help -- print this message");
+            System.out.println();
+            help = true;
+            return;
+        }
+
         if (!args.containsKey("url")) {
             throw new ConfigException("Missing required option: URL");
         }
@@ -87,6 +96,10 @@ public class Config {
             return Paths.get(this.output.toString(), url.getFile()).toString();
         }
         return this.output.toString();
+    }
+
+    public boolean isHelp() {
+        return help;
     }
 
     public boolean isRunAfter() {
